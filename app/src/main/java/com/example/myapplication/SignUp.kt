@@ -36,13 +36,17 @@ class SignUp : AppCompatActivity() {
             if (password != confirmPassword) {
                 Toast.makeText(this, "Password do not match", Toast.LENGTH_SHORT).show()
             } else {
+
+                // connect to Firestore
                 val ride_to_firestore = Firebase.firestore
 
+                // create user object
                 val newUser = hashMapOf(
                     "username" to username,
                     "password" to password
                 )
 
+                // add the user to Firestore
                 ride_to_firestore.collection("users")
                     .add(newUser)
                     .addOnSuccessListener {
@@ -54,6 +58,7 @@ class SignUp : AppCompatActivity() {
             }
         }
 
+        // back button
         binding_2.btnBackToMain.setOnClickListener {
 
             val intent = Intent(this,MainActivity::class.java)
