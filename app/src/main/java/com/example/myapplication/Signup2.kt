@@ -6,76 +6,57 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.example.myapplication.databinding.ActivitySignup2Binding
 
 class Signup2 : AppCompatActivity() {
-
-    private lateinit var binding_2 : ActivitySignup2Binding
+    // View binding for Signup2 activity layout
+    private lateinit var binding: ActivitySignup2Binding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Enable edge-to-edge layout for immersive UI
         enableEdgeToEdge()
-        binding_2 = ActivitySignup2Binding.inflate(layoutInflater)
-        setContentView(binding_2.root)
 
+        // Inflate the layout and initialize binding
+        binding = ActivitySignup2Binding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        binding_2.btnSignup.setOnClickListener {
+        // Set click listener for the Signup button
+        binding.btnSignup.setOnClickListener {
+            // Retrieve user inputs
+            val email = binding.inputUsername.text.toString().trim()
+            val pass = binding.inputPassword.text.toString()
+            val confirm = binding.inputConfirmPassword.text.toString()
 
-            val email = binding_2.inputUsername.text.toString().trim()
-            val password = binding_2.inputPassword.text.toString()
-            val confirmPassword = binding_2.inputConfirmPassword.text.toString()
+            // Validate email format with regex
+            val emailOk = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+".toRegex().matches(email)
+            // Validate password: length 8-15, contains uppercase and special character
+            val passOk = pass.length in 8..15 && pass.any { it.isUpperCase() } && pass.any { !it.isLetterOrDigit() }
 
-            // Email pattern
-            val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+".toRegex()
-            // Password pattern
-            val isPasswordValid = password.length in 8..15 &&
-                    password.any { char -> char.isUpperCase() } &&
-                    password.any { char -> !char.isLetterOrDigit() }
-
-            // validation
-            if (!email.matches(emailPattern)) {
-                Toast.makeText(
-                    this,
-                    "Please enter a valid email address",
-                    Toast.LENGTH_SHORT).show()
-            } else if (!isPasswordValid) {
-                Toast.makeText(
-                    this,
-                    "Password must be 8-15 characters, include a capital letter and a special character",
-                    Toast.LENGTH_SHORT).show()
-            } else if (password != confirmPassword) {
-                Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
-            } else {
-                // Success
-                val get_access : SharedPreferences = getSharedPreferences("User_credentials",MODE_PRIVATE)
-                val editor : SharedPreferences.Editor = get_access.edit()
-
-                editor.putString("username_given", email)
-                editor.putString("password_given", password)
-                editor.apply()
-                Toast.makeText(this, "Account created successfully!", Toast.LENGTH_SHORT).show()
+            when {
+                // Show toast if email is invalid
+                !emailOk -> Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_SHORT).show()
+                // Show toast if password rules not met
+                !passOk -> Toast.makeText(this, "Password must be 8-15 chars, include a capital letter & special char", Toast.LENGTH_SHORT).show()
+                // Show toast if passwords do not match
+                pass != confirm -> Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                else -> {
+                    // Save email and password securely in SharedPreferences
+                    val prefs: SharedPreferences = getSharedPreferences("User_credentials", MODE_PRIVATE)
+                    prefs.edit().apply {
+                        putString("username_given", email)
+                        putString("password_given", pass)
+                        apply()
+                    }
+                    // Notify user that account creation was successful
+                    Toast.makeText(this, "Account created successfully!", Toast.LENGTH_SHORT).show()
+                }
             }
-
         }
 
-        // Back button
-        binding_2.btnBack.setOnClickListener {
-            val intent_back = Intent(this, MainActivity::class.java)
-            startActivity(intent_back);
-        }
-
-
-
-
-
-
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+        // Back button navigates back to MainActivity
+        binding.btnBack.setOnClickListener {
+            startActivity(Intent(this, MainActivity::class.java))
         }
     }
 }
